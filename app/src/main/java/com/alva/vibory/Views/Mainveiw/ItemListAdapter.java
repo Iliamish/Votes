@@ -1,7 +1,9 @@
 package com.alva.vibory.Views.Mainveiw;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,6 +23,8 @@ import com.android.volley.toolbox.ImageLoader;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class ItemListAdapter extends BaseAdapter{
 
@@ -92,16 +96,18 @@ public class ItemListAdapter extends BaseAdapter{
         if (Integer.valueOf(item.getId())==Globals.getInstance().getCheckcand())
         viewHolder.imageView.setImageResource(R.drawable.squaretick);
 
-        if (FileUtils.checkImageFileExist(item.getImagelink(), context)) {
+
+/* if (FileUtils.checkImageFileExist(item.getImagelink(), context)) {
             File directory = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
             File imagePath = new File(directory, item.getImagelink());
             viewHolder.iconView.setImageURI(Uri.fromFile(imagePath));
 
         } else {
             downloadImage(viewHolder.iconView, item);
-        }
+        }*/
+        //downloadImage(viewHolder.iconView, item.getImagelink());
 
-
+        new CheckImage(viewHolder.iconView).execute(item.getImagelink());
 
         final int k =i;
         //viewHolder.imageView = null;
@@ -132,17 +138,21 @@ public class ItemListAdapter extends BaseAdapter{
 
     }
 
-    private void downloadImage(final ImageView iconView, final Item item) {
+    private void downloadImage(final ImageView iconView, final String link)  {
 
-        String url = "http://adlibtech.ru/elections/upload_images/"+item.getImagelink() ;
+        String url = "http://adlibtech.ru/elections/upload_images/"+link ;
         ImageLoader imageLoader = VolleySingleton.getInstance(this.context).getImageLoader();
 
         imageLoader.get(url, new ImageLoader.ImageListener() {
             @Override
-            public void onResponse(ImageLoader.ImageContainer response, boolean isImmediate) {
+            public void onResponse(final ImageLoader.ImageContainer response, boolean isImmediate) {
                 if (response.getBitmap() != null) {
-                    FileUtils.saveImageFile(response.getBitmap(), item.getImagelink(), context);
-                    iconView.setImageBitmap(response.getBitmap());
+                    //FileUtils.saveImageFile(response.getBitmap(), item.getImagelink(), context);
+
+
+                    new Thread(iconView).execute(response.getBitmap(),link);
+
+
                 }
             }
 
@@ -152,4 +162,60 @@ public class ItemListAdapter extends BaseAdapter{
             }
         });
     }
+
+    private class Thread extends AsyncTask<Object, Void, Bitmap>{
+
+
+        ImageView iconView;
+
+        public Thread( ImageView  img) {
+                      iconView = img;
+        }
+
+
+        @Override
+        protected Bitmap doInBackground(Object... objects) {
+
+            FileUtils.saveImageFile((Bitmap)objects[0], (String)objects[1], context);
+            return (Bitmap) objects[0];
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            iconView.setImageBitmap(bitmap);
+            System.out.println("as");
+        }
+    }
+
+   private class CheckImage extends AsyncTask<Object,Void,Uri>{
+        ImageView iconView;
+
+        public CheckImage(ImageView iconView) {
+            this.iconView = iconView;
+        }
+
+        @Override
+        protected Uri doInBackground(Object... objects) {
+            if (FileUtils.checkImageFileExist((String)objects[0], context)) {
+                File directory = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+                File imagePath = new File(directory, (String)objects[0]);
+
+                return Uri.fromFile(imagePath);
+            } else {
+                downloadImage(iconView, (String)objects[0]);
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Uri uri) {
+            super.onPostExecute(uri);
+            iconView.setImageURI(uri);
+        }
+    }
+
+
+
+
+
 }

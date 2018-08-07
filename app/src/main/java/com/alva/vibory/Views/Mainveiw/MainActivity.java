@@ -46,6 +46,13 @@ public class MainActivity extends Activity implements MyInterface{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         System.out.println("fssfs");
+
+       /* new Thread(new Runnable() {
+            @Override
+            public void run() {
+                System.out.println("p");
+            }
+        }).start();*/
     }
 
     @Override
@@ -76,6 +83,8 @@ public class MainActivity extends Activity implements MyInterface{
                 refreshControl.setRefreshing(false);
             }
         });
+
+
 
         controller.updateItems(this);
 

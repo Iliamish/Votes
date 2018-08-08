@@ -118,7 +118,7 @@ public class ItemListAdapter extends BaseAdapter{
                 viewHolder.imageView.setImageResource(R.drawable.squaretick);
 
                 sendVoice(item);
-                notifyDataSetChanged();
+
             }
         });
 

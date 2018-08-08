@@ -3,6 +3,7 @@ package com.alva.vibory.Views.Mainveiw;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
@@ -47,18 +48,15 @@ public class MainActivity extends Activity implements MyInterface{
         setContentView(R.layout.activity_main);
         System.out.println("fssfs");
 
-       /* new Thread(new Runnable() {
-            @Override
-            public void run() {
-                System.out.println("p");
-            }
-        }).start();*/
+
+
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-
+        //new Total((TextView)findViewById(R.id.allvotes)).onPostExecute("xuz");
         listView = (ListView)findViewById(R.id.lvSimple);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -78,7 +76,7 @@ public class MainActivity extends Activity implements MyInterface{
         refreshControl.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                //updateItems();
+
                 controller.updateItems(context);
                 refreshControl.setRefreshing(false);
             }
@@ -101,10 +99,40 @@ public class MainActivity extends Activity implements MyInterface{
 
     @Override
     public void Update(ArrayList<Item> itemsArray) {
+        System.out.println(this.itemsArray);
+        System.out.println(itemsArray);
+        if(!this.itemsArray.containsAll(itemsArray)){
         this.itemsArray = itemsArray;
-        ((TextView)findViewById(R.id.allvotes)).setText("Всего: " + Globals.getInstance().getTotal());
-        itemListAdapter.setItemsArray(itemsArray);
-        itemListAdapter.notifyDataSetChanged();
 
+        itemListAdapter.setItemsArray(itemsArray);
+        itemListAdapter.notifyDataSetChanged();}
+        else{
+            System.out.println("nothing");
+        }
+        ((TextView)findViewById(R.id.allvotes)).setText("Всего: " + Globals.getInstance().getTotal());
+    }
+
+    private class Total extends AsyncTask<TextView,Void,String>{
+
+        TextView textView;
+
+        public Total(TextView textView) {
+            this.textView = textView;
+        }
+
+        @Override
+        protected String doInBackground(TextView... textViews) {
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String text) {
+
+            int k = 1;
+            while (k<100000) {
+                k++;
+
+               textView.setText(String.valueOf( k));
+        }}
     }
 }
